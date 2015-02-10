@@ -156,20 +156,6 @@ def insert_item(text):
     }
     ajDB.insert(entry)
 
-def update_item(text):
-    date = get_date_str()
-    author = get_author()
-    email = get_email()
-    ajDB = get_atomic_journalDB()
-    entry = {
-    "date" : date,
-    "author" : author,
-    "email" : email,
-    "text" : text
-    }
-    ajDB.update({"date":date},entry)
-
-
 
 def open_atom():
     journal_buffer = create_text_buffer()
@@ -184,10 +170,7 @@ def open_atom():
 
 def slow_and_steady():
     contents = open_atom()
-    if not is_entry_today():
-        insert_item(contents)
-    else:
-        update_item(contents)
+    insert_item(contents)
 
 if __name__ == "__main__":
     slow_and_steady()
