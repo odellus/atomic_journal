@@ -56,13 +56,6 @@ def get_email():
     else:
         return "anyuser@hotmail.com"
 
-def get_aj_tmp_dir():
-    f_default = home_dir+"/.twsetup_defaults.py"
-    if os.path.exists(f_default):
-        defaults = imp.load_source("twsetup_defaults", f_default)
-        if "AJ_TMP_DIR" in dir(defaults):
-            return defaults.AJ_TMP_DIR
-
 def make_header():
     """
     Function : MAKE_HEADER
@@ -71,7 +64,7 @@ def make_header():
     """
 
     host_name = socket.gethostname()
-    user_name = user 
+    user_name = user # os.environ['USER']
     t = datetime.now()
     tz_name = datetime.now(tzlocal()).tzname()
     tz_dst = datetime.now(tzlocal()).dst()
@@ -148,12 +141,7 @@ def clear_text_buffer():
 
 
 def create_text_buffer():
-
-    aj_tmpdir = get_aj_tmp_dir()
-    if aj_tmpdir == None:
-        journal_buffer = "/tmp/"+ user +"_aj_buffer.md"
-    else:
-        journal_buffer = aj_tmpdir +"/"+user+"_aj_buffer.md"
+    journal_buffer = "/tmp/"+ user +"_aj_buffer.md"
     if not is_entry_today():
         fh = open(journal_buffer, "w")
         header = make_header()+"\n"
