@@ -135,7 +135,7 @@ def create_text_buffer():
         ajDB = get_atomic_journalDB()
         entry = ajDB.find_one({"date":get_date_str()})
         contents = entry["text"]
-        contents += "\n\n---\n" + get_time_str()
+        contents += "\n\n---\n" + get_time_str() + "\n\n"
         fh = open(journal_buffer, "w")
         fh.write(contents)
         fh.close()
