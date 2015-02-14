@@ -14,6 +14,18 @@ from datetime import datetime
 from dateutil.tz import tzlocal
 import imp
 import subprocess
+
+
+
+if os.name == 'nt':
+    home_dir = os.environ["HOMEPATH"]
+    user = os.environ["USERNAME"]
+else:
+    home_dir = os.environ["HOME"]
+    user = os.environ["USER"]
+
+
+
 def get_author():
     """
     Function : GET_AUTHOR
@@ -21,7 +33,7 @@ def get_author():
     Description : Get the author from ~/.twsetup_defaults.py.
     """
 
-    f_default = os.environ["HOME"]+"/.twsetup_defaults.py"
+    f_default = home_dir+"/.twsetup_defaults.py"
     if os.path.exists(f_default):
         defaults = imp.load_source("twsetup_defaults", f_default)
         if "NAME" in dir(defaults):
@@ -36,13 +48,20 @@ def get_email():
     Description : Get the email from ~/.twsetup_defaults.py.
     """
 
-    f_default = os.environ["HOME"]+"/.twsetup_defaults.py"
+    f_default = home_dir+"/.twsetup_defaults.py"
     if os.path.exists(f_default):
         defaults = imp.load_source("twsetup_defaults", f_default)
         if "EMAIL" in dir(defaults):
             return defaults.EMAIL
     else:
         return "anyuser@hotmail.com"
+
+def get_aj_tmp_dir():
+    f_default = home_dir+"/.twsetup_defaults.py"
+    if os.path.exists(f_default):
+        defaults = imp.load_source("twsetup_defaults", f_default)
+        if "AJ_TMP_DIR" in dir(defaults):
+            return defaults.AJ_TMP_DIR
 
 def make_header():
     """
@@ -52,7 +71,7 @@ def make_header():
     """
 
     host_name = socket.gethostname()
-    user_name = os.environ['USER']
+    user_name = user 
     t = datetime.now()
     tz_name = datetime.now(tzlocal()).tzname()
     tz_dst = datetime.now(tzlocal()).dst()
@@ -63,7 +82,10 @@ def make_header():
       t.day
     ]
 
-    date_str = map(str,date)
+    date_str = []
+    itr = map(str,date)
+    for x in itr:
+        date_str.append(x)
     for k, x in enumerate(date_str):
         if len(x) == 1:
             date_str[k] = "0"+x
@@ -73,7 +95,10 @@ def make_header():
       t.minute
     ]
 
-    time_str = map(str, time)
+    time_str = []
+    itr = map(str, time)
+    for x in itr:
+        time_str.append(x)
     for k, x in enumerate(time_str):
         if len(x) == 1:
             time_str[k] = "0"+x
@@ -117,13 +142,18 @@ def is_entry_today():
         return False
 
 def clear_text_buffer():
-    journal_buffer = "/tmp/"+os.environ["USER"]+"_aj_buffer.md"
+    journal_buffer = "/tmp/"+ user +"_aj_buffer.md"
     if os.path.exists(journal_buffer):
         os.remove(journal_buffer)
 
 
 def create_text_buffer():
-    journal_buffer = "/tmp/"+os.environ["USER"]+"_aj_buffer.md"
+
+    aj_tmpdir = get_aj_tmp_dir()
+    if aj_tmpdir == None:
+        journal_buffer = "/tmp/"+ user +"_aj_buffer.md"
+    else:
+        journal_buffer = aj_tmpdir +"/"+user+"_aj_buffer.md"
     if not is_entry_today():
         fh = open(journal_buffer, "w")
         header = make_header()+"\n"
