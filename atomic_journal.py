@@ -71,7 +71,7 @@ def make_header():
     """
 
     host_name = socket.gethostname()
-    user_name = user 
+    user_name = user
     t = datetime.now()
     tz_name = datetime.now(tzlocal()).tzname()
     tz_dst = datetime.now(tzlocal()).dst()
@@ -165,7 +165,7 @@ def create_text_buffer():
         ajDB = get_atomic_journalDB()
         entry = ajDB.find_one({"date":get_date_str()})
         contents = entry["text"]
-        contents += "\n\n---\n" + get_time_str() + "\n\n"
+        contents += "\n---\n" + get_time_str() + "\n\n"
         fh = open(journal_buffer, "w")
         fh.write(contents)
         fh.close()
@@ -197,25 +197,56 @@ def update_item(text):
     "email" : email,
     "text" : text
     }
-    ajDB.update({"date":date},entry)
+
+    query = {"$and": [
+        {"date": date},
+        {"author": author}
+        ]
+             }
+    ajDB.update(query,entry)
 
 
 
 def open_atom():
+    """
+    Function : SLOW_AND_STEAD()
+
+    Description : Opens the contents of todays journal in the atom
+                  text editor.
+    """
+    # create_text_buffer() creates the text buffer intelligently
     journal_buffer = create_text_buffer()
+
+    # Launch atom, tell it to open a new window and to wait for
+    # atom to close before continuing.
     atom_proc_str = "atom -w -n "+journal_buffer
     p = subprocess.Popen(atom_proc_str, shell=True)
     p.communicate()
+
+    # Read in the contents of the temporary buffer file.
     fh = open(journal_buffer, "r")
     contents = fh.read()
     fh.close()
+
+    # Get rid of the temporary text file.
+    clear_text_buffer()
+
     return contents
 
 
 def slow_and_steady():
+    """
+    Function : SLOW_AND_STEADY()
+
+    Description : The main() function.
+    """
+    # This call opens up the atom editor.
     contents = open_atom()
+
+    # If there is no entry for today, we *insert* the contents.
     if not is_entry_today():
         insert_item(contents)
+    # Otherwise we **update** the previous contents
     else:
         update_item(contents)
 
